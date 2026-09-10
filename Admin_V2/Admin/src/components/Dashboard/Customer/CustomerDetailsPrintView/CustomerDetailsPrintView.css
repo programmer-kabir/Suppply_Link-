@@ -1,0 +1,439 @@
+/* Screen view */
+.a4-sheet {
+  width: 210mm;
+  background: #fff;
+  box-sizing: border-box;
+  margin: 0 auto; /* screen এ center */
+  padding: 0; /* ❌ no inner padding */
+  border: none; /* ❌ no outer border */
+  font-family: "Noto Serif Bengali", serif;
+}
+
+.company-address {
+  font-weight: 800;
+  font-size: 18px;
+  color: #000;
+  text-align: center;
+}
+.company-name {
+  font-weight: 800;
+  font-size: 35px;
+  color: #000;
+  text-align: center;
+}
+.company-address1 {
+  font-weight: 800;
+  font-size: 18px;
+  color: #000;
+  text-align: center;
+}
+.company-sub {
+  font-weight: 800;
+
+  font-size: 16px;
+  color: #000;
+  text-align: center;
+}
+.meta-box {
+  border: 1px solid #000;
+  padding: 6px;
+  font-size: 12px;
+  color: #000;
+}
+.ribbon-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 10px;
+}
+
+.ribbon {
+  position: relative;
+  border: 1px solid #000;
+  padding: 6px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  background: #fff;
+  color: #000;
+}
+
+/* left arrow */
+.ribbon::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-right: 16px solid #000;
+}
+
+/* right arrow */
+.ribbon::after {
+  content: "";
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-left: 16px solid #000;
+}
+
+/* inner white cut (to look hollow) */
+.ribbon span {
+  position: relative;
+  z-index: 2;
+}
+
+.ribbon::before,
+.ribbon::after {
+  z-index: 1;
+}
+
+.info-table {
+  color: #000;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.info-table th {
+  border: 0.1px solid #000;
+  padding: 1px;
+  font-weight: 700;
+  text-align: left;
+  background: #fff;
+}
+
+.info-table td {
+  border: 1px solid #000;
+  padding: 1px 4px;
+  vertical-align: top;
+}
+
+.info-table .lbl {
+  width: 22%;
+  font-weight: 500;
+}
+
+.info-table .val {
+  width: 30%;
+}
+
+.info-table .attachments {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.addr {
+  white-space: nowrap; /* এক লাইনে */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px; /* ✅ default font */
+  line-height: 1.1;
+}
+
+.addr-small {
+  font-size: 9px; /* 🔥 শুধু লম্বা হলে ছোট */
+}
+/* Summary */
+.summary-form-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: black;
+}
+
+.summary-form-table th {
+  border: 1px solid #000;
+  padding: 1px;
+  font-weight: 700;
+  text-align: left;
+  background: #fff;
+}
+
+.summary-form-table td {
+  border: 1px solid #000;
+  padding: 1px 4px;
+  vertical-align: top;
+}
+
+.summary-form-table .lbl {
+  width: 25%;
+  font-weight: 500;
+}
+
+.summary-form-table .val {
+  width: 23%;
+}
+
+/* Table */
+.inst-chart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+  color: #000;
+}
+
+.inst-chart-table th,
+.inst-chart-table td {
+  border: 1px solid #000;
+  padding: 1px 4px;
+  vertical-align: middle;
+}
+
+.inst-title {
+  text-align: left;
+  font-weight: 800;
+  padding: 2px 2px;
+  background: #fff;
+}
+
+.tc {
+  text-align: center;
+}
+
+.total-cell {
+  font-weight: 800;
+  text-align: right;
+  padding-right: 2px;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+.sig {
+  width: 45%;
+  text-align: center;
+  color: #000;
+}
+.sig .line {
+  border-bottom: 1px solid #000;
+  height: 18px;
+}
+.sig .cap {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #000;
+}
+
+/* ✅ IMPORTANT: prevent dashboard wrappers from cutting */
+.print-page-fix {
+  height: auto !important;
+  overflow: visible !important;
+  font-family: "Noto Serif Bengali", serif;
+}
+.sheet-inner {
+  padding: 8mm; /* 🔧 এখানে control করবে */
+}
+/* PRINT ONLY */
+
+@media print {
+  /* ✅ stable A4, no extra page */
+  @page {
+    size: A4;
+    margin: 2mm;
+  }
+
+  /* ✅ reset */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+  }
+
+  /* ✅ keep text visible */
+  body,
+  body * {
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* ✅ remove wrappers spacing + scroll effects */
+  .print-page-fix,
+  .print-area,
+  .overflow-auto {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* ✅ ONE SHEET = ONE PAGE */
+  .a4-sheet {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: #fff !important;
+
+    page-break-after: always !important;
+    break-after: page !important;
+
+    overflow: hidden !important; /* ✅ MUST be important */
+  }
+
+  /* ✅ last page should not force blank */
+  .a4-sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* ✅ inner area must NOT exceed the page height */
+  @media print {
+    @page {
+      size: A4;
+      margin: 2mm; /* ✅ top space control */
+    }
+
+    html,
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box !important;
+    }
+
+    /* ✅ keep text visible (dark theme override রুখবে) */
+    body,
+    body * {
+      color: #000 !important;
+      background: transparent !important;
+    }
+
+    /* ✅ hide screen-only buttons */
+    .print\:hidden {
+      display: none !important;
+    }
+
+    /* ✅ remove wrapper spacing/scroll behaviors */
+    .print-page-fix,
+    .print-area,
+    .overflow-auto,
+    .overflow-hidden {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+    }
+
+    /* ✅ Top gap control (header blocks) */
+    .header {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+    @page {
+      margin: 0mm !important;
+    }
+    /* 3) header text spacing tight */
+    .company-address {
+      font-size: 15px !important;
+      line-height: 1.5 !important;
+    }
+    .company-name {
+      font-size: 35px !important;
+      line-height: 1.5 !important;
+    }
+    .company-address1 {
+      font-size: 18px !important;
+      line-height: 1.5 !important;
+    }
+    .company-sub {
+      font-size: 18px !important;
+      line-height: 1.5 !important;
+    }
+
+    /* ✅ ribbon block margin কমাও */
+    .ribbon-wrap {
+      margin: 4px 0 6px !important;
+    }
+
+    /* ✅ ONE SHEET = ONE PAGE */
+    .a4-sheet {
+      width: 210mm !important;
+      height: 297mm !important; /* ✅ exact A4 */
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      background: #fff !important;
+
+      page-break-after: always !important;
+      break-after: page !important;
+
+      overflow: hidden !important; /* ✅ overflow হলে নতুন page না বানায় */
+    }
+
+    /* ✅ last sheet -> no extra blank page */
+    .a4-sheet:last-child {
+      page-break-after: auto !important;
+      break-after: auto !important;
+    }
+
+    /* ✅ inner page padding control (top আলাদা করে adjust করা হলো) */
+    .sheet-inner {
+      padding-top: 2mm !important;
+      padding-left: 25mm !important;
+      padding-right: 6mm !important;
+      padding-bottom: 4mm !important;
+    }
+
+    /* ✅ ensure tables don't break badly */
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      background: #fff !important;
+    }
+
+    thead,
+    tbody,
+    tr,
+    td,
+    th {
+      background: #fff !important;
+    }
+
+    table,
+    tr,
+    td,
+    th {
+      page-break-inside: avoid !important;
+    }
+
+    /* ✅ remove browser-added shadows */
+    * {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+  }
+
+  /* ✅ table should not create overflow */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+}

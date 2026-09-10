@@ -1,0 +1,22 @@
+/* ====== Custom Scrollbar (Flat & Thick) ====== */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px; /* scrollbar মোটা */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06); /* track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35); /* thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: auto; /* thin না, normal */
+  scrollbar-color: rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.08);
+}

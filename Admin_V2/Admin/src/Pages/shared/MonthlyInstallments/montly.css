@@ -1,0 +1,71 @@
+/* @media print {
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    color: #000;
+    background: #fff;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: #e5e7eb !important;
+    color: #000 !important;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  th,
+  td {
+    border: 1px solid #555;
+    padding: 3px 5px;
+    vertical-align: middle;
+  }
+
+  td {
+    text-align: left;
+  }
+
+  tr:nth-child(even) {
+    background: #f7f7f7;
+  }
+
+  .amount {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .status-paid {
+    color: green;
+    font-weight: bold;
+  }
+
+  .status-unpaid {
+    color: red;
+    font-weight: bold;
+  }
+}@media print {
+
+  table {
+    page-break-after: auto;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+
+} */

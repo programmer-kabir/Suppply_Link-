@@ -1,0 +1,16 @@
+# public_html/.htaccess - SPA fallback (static build)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # don't rewrite existing files or directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # don't rewrite API folder (so /api/* still goes to your PHP endpoints)
+  RewriteRule ^api/ - [L]
+
+  # everything else -> serve index.html (React Router will handle path)
+  RewriteRule ^ index.html [L,QSA]
+</IfModule>

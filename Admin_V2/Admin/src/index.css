@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+.date-fix::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.4);
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+/* optional: text inside date field brighter */
+.date-fix::-webkit-datetime-edit {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== SupplyLink Modal Scrollbar ===== */
+.sl-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(148, 163, 184, 0.45) rgba(15, 23, 42, 0.25);
+}
+
+.sl-scroll::-webkit-scrollbar {
+  width: 50px;
+}
+
+.sl-scroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.25);
+  border-radius: 999px;
+}
+
+.sl-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  border: 5px solid rgba(15, 23, 42, 0.25); /* makes it look slim */
+}
+
+.sl-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+.print-hide {
+  display: none !important;
+}
+@media print {
+  #app-scroll-container {
+    top: 7mm !important; /* 🔥 72px gap remove */
+    bottom: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    position: relative !important; /* absolute থেকে বের করলাম */
+    overflow: visible !important; /* print cut হবে না */
+    padding-top: 0 !important; /* extra padding off */
+  }
+}
+
+@font-face {
+  font-family: "Kalpurush";
+  src: url("./assets/fonts/Kalpurush-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Kalpurush";
+  src: url("./assets/fonts/Kalpurush-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+.input-dark {
+  @apply w-full bg-[#111827] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-gray-400 outline-none focus:border-green-500 transition;
+}

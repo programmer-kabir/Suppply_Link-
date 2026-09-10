@@ -1,0 +1,14 @@
+📄 SupplyLink Dashboard Documentation
+
+1. 📌 Project Overview
+
+Project Name: SupplyLink Installment Management System
+Type: Web-based Admin Dashboard
+Tech Stack:
+
+Frontend: React.js
+Backend: PHP
+Database: MySQL
+
+Purpose:
+এই system টি installment ভিত্তিক product sale, customer management, payment tracking এবং financial হিসাব manage করার জন্য তৈরি করা হয়েছে।
