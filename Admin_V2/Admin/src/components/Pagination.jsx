@@ -63,13 +63,14 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 const Pagination = ({
   reportData,
   currentPage,
-  totalPages,
+  totalPages = 1,
   PAGE_SIZE,
-  pageNumbers,
+  pageNumbers = [1],
   setCurrentPage,
   storageKey,
 }) => {
-  if (!reportData || reportData.length <= PAGE_SIZE) return null;
+  const totalItems = Array.isArray(reportData) ? reportData.length : 0;
+  if (!totalItems && totalPages <= 1) return null;
 
   const goTo = (page) => {
     const clamped = Math.min(Math.max(1, page), totalPages);
@@ -79,9 +80,9 @@ const Pagination = ({
 
   return (
     <div className="w-full px-2 md:px-5">
-      <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div className="mt-4 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <p className="text-sm text-slate-400">
-          Page {currentPage} of {totalPages}
+          Page {currentPage} of {totalPages || 1} {totalItems > 0 && `(${totalItems} items)`}
         </p>
 
         {/* ✅ Mobile overflow scroll */}

@@ -140,12 +140,13 @@ const MonthlyInstallmentOverviews = () => {
     let serial = 1;
 
     const sortedCards = [...(customerInstallmentCards || [])].sort(
-      (a, b) => Number(a.card_number) - Number(b.card_number),
+      (a, b) => Number(a.card_id || a.id || 0) - Number(b.card_id || b.id || 0),
     );
 
     sortedCards.forEach((card) => {
-      if (!map[card.card_number]) {
-        map[card.card_number] = serial;
+      const key = card.card_id ?? card.id;
+      if (key !== undefined && key !== null && !map[key]) {
+        map[key] = serial;
         serial++;
       }
     });
@@ -177,8 +178,9 @@ const MonthlyInstallmentOverviews = () => {
 
       const card = (customerInstallmentCards || []).find(
         (c) =>
-          String(c.card_number) === String(payment.card_id) ||
-          String(c.id) === String(payment.card_id),
+          String(c.card_id) === String(payment.card_id) ||
+          String(c.id) === String(payment.card_id) ||
+          String(c.card_number) === String(payment.card_id),
       );
 
 if (!card) return;
@@ -186,9 +188,11 @@ if (!card) return;
 if (!customer) return;
       const isPaid = payment.status === "Paid" || payment.paid_date;
 
+      const cardIdentifier = card?.card_id ?? card?.id ?? payment?.card_id;
+
       rows.push({
-        cardSerial: card ? cardSerialMap[card.card_number] : "-",
-        cardNo: card?.card_number || payment.card_id || "-",
+        cardSerial: card ? (cardSerialMap[card.card_id ?? card.id] || cardIdentifier || "-") : "-",
+        cardNo: cardIdentifier || "-",
         customerName: customer?.name || "Unknown",
         phone: customer?.mobile || "-",
         image: customer?.photo || "-",
@@ -267,7 +271,7 @@ if (!customer) return;
   const unpaidAmount = unpaid.reduce((s, r) => s + r.dueAmount, 0);
 
   /* ---------------- PAGINATION ---------------- */
-  const PAGE_SIZE = 25;
+  const PAGE_SIZE = 50;
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -441,12 +445,7 @@ if (!customer) return;
               <th className="px-4 py-3 text-left">গ্রাহক</th>
               <th className="px-4 py-3 text-left">ফোন</th>
               <th className="px-4 py-3 text-left">কিস্তি</th>
-              <th className="px-4 py-3 text-left hidden md:table-cell">
-                মূল টাকা (৳)
-              </th>
-              <th className="px-4 py-3 text-left hidden md:table-cell">
-                লাভ (৳)
-              </th>
+
               <th className="px-4 py-3 text-left hidden md:table-cell">
                 Due Date
               </th>
@@ -492,9 +491,9 @@ if (!customer) return;
                     <Link
                       target="_blank"
                       rel="noopener noreferrer"
-                      to={`/customer/create_installment_chart?cardId=${row.cardSerial}`}
+                      to={`/customer/create_installment_chart?cardId=${row.cardNo}`}
                     >
-                      {row.cardSerial}
+                      {row.cardNo}
                     </Link>
                   </td>
 
@@ -531,12 +530,6 @@ if (!customer) return;
                     {row.installmentNo} - <br /> {row?.dueAmount} (৳)
                   </td>
 
-                  <td className="px-4 capitalize hidden md:table-cell">
-                    {row.principal}
-                  </td>
-                  <td className="px-4 capitalize hidden md:table-cell">
-                    {row.profit}
-                  </td>
                   <td className="px-4 capitalize hidden md:table-cell">
                     {row.dueDate}
                   </td>

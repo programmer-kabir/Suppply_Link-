@@ -17,11 +17,12 @@ function sendJson($data, $status = 200) {
 }
 
 // ==========================
-// ✅ Get All Cash Data
+// ✅ Get All Cash Data (Active Only)
 // ==========================
 $stmt = $mysqli->prepare("
     SELECT *
     FROM cash
+    WHERE (is_deleted = 0 OR is_deleted IS NULL)
     ORDER BY date DESC, id DESC
 ");
 
@@ -30,13 +31,14 @@ $stmt->execute();
 $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // ==========================
-// ✅ Total In / Out
+// ✅ Total In / Out (Active Only)
 // ==========================
 $stmt = $mysqli->prepare("
     SELECT 
         type,
         IFNULL(SUM(amount),0) as total
     FROM cash
+    WHERE (is_deleted = 0 OR is_deleted IS NULL)
     GROUP BY type
 ");
 

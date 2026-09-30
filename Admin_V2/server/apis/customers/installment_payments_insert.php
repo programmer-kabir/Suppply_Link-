@@ -34,9 +34,10 @@ INSERT INTO installment_payments (
     receipt_number,
     status,
     signature,
+    collected_by,
     created_at
 ) VALUES (
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()
 )
 ";
 
@@ -73,10 +74,11 @@ foreach ($input as $row) {
     $payment_method   = $row["payment_method"] ?? "Cash";
     $receipt_number   = $row["receipt_number"] ?? null;
     $status           = $row["status"];
-    $signature        = $row["signature"] ?? null;
+    $signature        = isset($row["signature"]) && $row["signature"] !== null ? (int)$row["signature"] : null;
+    $collected_by     = isset($row["collected_by"]) && $row["collected_by"] !== null ? (int)$row["collected_by"] : $signature;
 
     $stmt->bind_param(
-        "iisdddssssss",
+        "iisdddsssssii",
         $card_id,
         $installment_no,
         $tag,
@@ -88,7 +90,8 @@ foreach ($input as $row) {
         $payment_method,
         $receipt_number,
         $status,
-        $signature
+        $signature,
+        $collected_by
     );
 
     if (!$stmt->execute()) {

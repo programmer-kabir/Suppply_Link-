@@ -28,7 +28,8 @@ SELECT
     u.photo,
 
     -- Card Info
-    c.card_number,
+    c.card_id,
+    c.card_id AS card_number,
     c.product_name,
     c.sale_price,
     c.down_payment,

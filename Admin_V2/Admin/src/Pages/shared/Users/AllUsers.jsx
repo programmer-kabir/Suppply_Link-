@@ -153,7 +153,7 @@ const [isUpdating, setIsUpdating] = useState(false);
                 </div>
 
                 <span className="text-[10px] text-gray-400 bg-gray-800 px-2 py-1 rounded">
-                  ID {user.id}
+                  ID {user.user_id}
                 </span>
               </div>
 

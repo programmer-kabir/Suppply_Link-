@@ -47,7 +47,7 @@ $end   = date("Y-m-t", strtotime($start)); // last day of month
 // ==========================
 $stmt = $mysqli->prepare("
     SELECT * FROM cash
-    WHERE type='in' AND date BETWEEN ? AND ?
+    WHERE type='in' AND date BETWEEN ? AND ? AND (is_deleted = 0 OR is_deleted IS NULL)
     ORDER BY date DESC
 ");
 $stmt->bind_param("ss", $start, $end);
@@ -59,7 +59,7 @@ $cashIn = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==========================
 $stmt = $mysqli->prepare("
     SELECT * FROM cash
-    WHERE type='out' AND date BETWEEN ? AND ?
+    WHERE type='out' AND date BETWEEN ? AND ? AND (is_deleted = 0 OR is_deleted IS NULL)
     ORDER BY date DESC
 ");
 $stmt->bind_param("ss", $start, $end);
@@ -72,7 +72,7 @@ $cashOut = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt = $mysqli->prepare("
     SELECT type, IFNULL(SUM(amount),0) as total
     FROM cash
-    WHERE date BETWEEN ? AND ?
+    WHERE date BETWEEN ? AND ? AND (is_deleted = 0 OR is_deleted IS NULL)
     GROUP BY type
 ");
 $stmt->bind_param("ss", $start, $end);
@@ -95,7 +95,7 @@ $net = $totalIn - $totalOut;
 $stmt = $mysqli->prepare("
     SELECT type, IFNULL(SUM(amount),0) as total
     FROM cash
-    WHERE date < ?
+    WHERE date < ? AND (is_deleted = 0 OR is_deleted IS NULL)
     GROUP BY type
 ");
 $stmt->bind_param("s", $start);

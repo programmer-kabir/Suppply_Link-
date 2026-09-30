@@ -242,9 +242,10 @@ export const InstallmentRow = ({
     /* ---- Down Payment (optional) ---- */
     if (hasDownPayment && downPaymentAmount > 0) {
       const { principal, profit } = calculatePrincipalProfit(downPaymentAmount);
+      const collectorId = user?.id || card?.reference_user_id || null;
 
       rows.push({
-        card_id: card.id,
+        card_id: card.card_id,
         installment_no: 0,
         tag: "ডাউন পেমেন্ট",
         due_amount: downPaymentAmount,
@@ -254,7 +255,8 @@ export const InstallmentRow = ({
         paid_date: card.delivery_date || today,
         payment_method: "Cash",
         receipt_number: "",
-        signature: null,
+        signature: collectorId,
+        collected_by: collectorId,
         status: "Paid",
       });
     }
@@ -266,7 +268,7 @@ export const InstallmentRow = ({
       const { principal, profit } = calculatePrincipalProfit(inst.amount);
       const dueDate = addMonthsYMD(firstDue, index);
       rows.push({
-        card_id: card.id,
+        card_id: card.card_id,
         installment_no: index + 1,
         tag: `${bnNumbers[index] || index + 1} কিস্তি`,
         due_amount: inst.amount,
@@ -325,7 +327,7 @@ export const InstallmentRow = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            card_id: card.id,
+            card_id: card.card_id,
             status: "Fully Paid",
           }),
         },

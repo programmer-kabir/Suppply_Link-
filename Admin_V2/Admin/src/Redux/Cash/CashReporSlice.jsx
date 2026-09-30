@@ -22,7 +22,7 @@ const CashReportSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchCashReports.pending, (state) => {
-      state.CashReports = true;
+      state.isCashReportsLoading = true;
     });
     builder.addCase(fetchCashReports.fulfilled, (state, action) => {
       state.isCashReportsLoading = false;

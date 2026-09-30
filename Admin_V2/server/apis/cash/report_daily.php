@@ -43,7 +43,7 @@ if (!date_create($date)) {
 // ==========================
 $stmt = $mysqli->prepare("
     SELECT * FROM cash 
-    WHERE type='in' AND date=?
+    WHERE type='in' AND date=? AND (is_deleted = 0 OR is_deleted IS NULL)
     ORDER BY id DESC
 ");
 $stmt->bind_param("s", $date);
@@ -55,7 +55,7 @@ $cashIn = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 // ==========================
 $stmt = $mysqli->prepare("
     SELECT * FROM cash 
-    WHERE type='out' AND date=?
+    WHERE type='out' AND date=? AND (is_deleted = 0 OR is_deleted IS NULL)
     ORDER BY id DESC
 ");
 $stmt->bind_param("s", $date);
@@ -68,7 +68,7 @@ $cashOut = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt = $mysqli->prepare("
     SELECT type, IFNULL(SUM(amount),0) as total 
     FROM cash 
-    WHERE date=? 
+    WHERE date=? AND (is_deleted = 0 OR is_deleted IS NULL)
     GROUP BY type
 ");
 $stmt->bind_param("s", $date);

@@ -65,19 +65,19 @@ export const sidebarMenu = [
         roles: ["admin", "developer", "manager", "staff"],
       },
       {
-        label: "রিপোর্ট",
+        label: "Cash Reports",
         path: "/cash/cash_reports",
         icon: TbReport,
         roles: ["admin", "developer", "manager", "staff"],
       },
       {
-        label: "রিপোর্ট প্রিন্ট",
+        label: "Print Reports",
         path: "/cash/cash_reports_print",
         icon: TbReport,
         roles: ["admin", "developer", "manager", "staff"],
       },
       {
-        label: "অনুদান অনুমোদন",
+        label: "Grant Approval",
         path: "/cash/cash-report-approval",
         icon: TbCashBanknote,
         roles: ["admin", "developer", "manager", "staff"],
@@ -144,12 +144,6 @@ export const sidebarMenu = [
       {
         label: "Installment Analytics",
         path: "/customers/monthly_installment_overviews",
-        icon: MdShowChart,
-        roles: ["admin", "developer", "manager", "staff"],
-      },
-      {
-        label: "Installment Analytics Test",
-        path: "/customers/monthly_installment_overviews_test",
         icon: MdShowChart,
         roles: ["admin", "developer", "manager", "staff"],
       },
@@ -255,6 +249,12 @@ export const sidebarMenu = [
         roles: ["admin", "developer", "manager", "staff"],
       },
     ],
+  },
+  {
+    label: "Monthly Profit Report",
+    path: "/reports/monthly-profit",
+    icon: BsGraphUpArrow,
+    roles: ["admin", "developer", "manager", "staff"],
   },
   {
     type: "collapse",

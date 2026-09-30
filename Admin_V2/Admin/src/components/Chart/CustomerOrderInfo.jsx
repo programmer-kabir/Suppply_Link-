@@ -11,13 +11,17 @@ import { FaIdCard } from "react-icons/fa";
 
 const CustomerOrderInfo = ({ currentCard }) => {
   const { users } = useUsers();
-  const currenUser = users.find((user) => user.id === currentCard.user_id);
-  // const { customerInstallmentCards } = useCustomerInstallmentCards();
+  const currenUser = users?.find(
+    (user) =>
+      user?.id === currentCard?.user_id ||
+      user?.user_id === currentCard?.user_id
+  );
+
   return (
     <div
       className="group bg-gradient-to-b from-gray-900 to-gray-950
                          border border-gray-800 rounded-2xl p-4
-                         hover:border-blue-500 hover:shadow-xl transition-all flex justify-between"
+                         hover:border-blue-500 hover:shadow-xl transition-all flex flex-col md:flex-row justify-between gap-6"
     >
       {/* Left */}
       <section className="space-y-4">
@@ -26,11 +30,24 @@ const CustomerOrderInfo = ({ currentCard }) => {
           কার্ড মালিকের তথ্য
         </h3>
 
-        <InfoRow icon={<HiUser />} text={currenUser?.name} />
-        <InfoRow icon={<HiPhone />} text={currenUser?.mobile} />
-        <InfoRow icon={<FaIdCard />} text={currenUser?.id_number} />
-        <InfoRow icon={<HiMapPin />} text={currenUser?.address} />
+        <InfoRow
+          icon={<HiUser />}
+          text={currenUser?.name || currentCard?.user_name || "N/A"}
+        />
+        <InfoRow
+          icon={<HiPhone />}
+          text={currenUser?.mobile || currentCard?.user_mobile || "N/A"}
+        />
+        <InfoRow
+          icon={<FaIdCard />}
+          text={currenUser?.id_number || "N/A"}
+        />
+        <InfoRow
+          icon={<HiMapPin />}
+          text={currenUser?.address || "N/A"}
+        />
       </section>
+
       <section className="space-y-4">
         <h3 className="text-emerald-400 font-semibold flex items-center gap-2">
           <HiUser className="text-lg" />
@@ -51,28 +68,31 @@ const CustomerOrderInfo = ({ currentCard }) => {
 
         <InfoRow
           icon={<HiCube />}
-          text={`পণ্যের নাম ${currentCard?.product_name}`}
+          text={`পণ্যের নাম: ${currentCard?.product_name || "N/A"}`}
         />
         <InfoRow
           icon={<HiCurrencyBangladeshi />}
-          text={`বিক্রয় মূল্য ${currentCard?.sale_price}`}
+          text={`বিক্রয় মূল্য: ${currentCard?.sale_price || 0}`}
         />
         <InfoRow
           icon={<HiCurrencyBangladeshi />}
-          text={`ক্রয় মূল্য ${currentCard?.purchase_price}`}
+          text={`ক্রয় মূল্য: ${currentCard?.purchase_price || 0}`}
         />
         <InfoRow
           icon={<HiCalendarDays />}
-          text={`ডেলিভারি তারিখ ${currentCard?.delivery_date}`}
+          text={`ডেলিভারি তারিখ: ${currentCard?.delivery_date || "—"}`}
         />
       </section>
     </div>
   );
 };
+
 const InfoRow = ({ icon, text }) => (
   <div className="flex items-center gap-3 text-zinc-300">
     <span className="text-zinc-400">{icon}</span>
     <span>{text}</span>
   </div>
 );
+
 export default CustomerOrderInfo;
+

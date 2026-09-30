@@ -40,7 +40,7 @@ const MainLayout = () => {
     };
   }, [location.pathname]);
   return (
-    <div className="h-screen bg-[#071025] text-white overflow-hidden flex flex-col md:flex-row">
+    <div className="h-screen bg-[#070d1e] text-slate-100 overflow-hidden flex flex-col md:flex-row font-sans">
       {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-40 md:hidden ${
@@ -48,10 +48,10 @@ const MainLayout = () => {
         }`}
       >
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/60 backdrop-blur-md"
           onClick={() => setSidebarOpen(false)}
         />
-        <aside className="absolute left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-slate-900 to-slate-800 p-4 overflow-y-auto custom-scrollbar shadow-2xl">
+        <aside className="absolute left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-[#091124] via-[#070d1e] to-[#091124] border-r border-slate-800/80 p-4 overflow-y-auto custom-scrollbar shadow-2xl">
           <Sidebar
             closeDrawer={() => setSidebarOpen(false)}
             onLinkClick={() => setSidebarOpen(false)}
@@ -60,12 +60,12 @@ const MainLayout = () => {
       </div>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block overflow-y-auto w-72 bg-gradient-to-b from-slate-900 to-slate-800 border-r border-white/5 custom-scrollbar h-screen sticky top-0">
+      <aside className="hidden md:block overflow-y-auto w-72 bg-gradient-to-b from-[#091124] via-[#070d1e] to-[#091124] border-r border-slate-800/80 custom-scrollbar h-screen sticky top-0 shadow-xl">
         <Sidebar />
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-screen relative overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen relative overflow-hidden bg-[#070d1e]">
         {/* Header */}
         <header className="w-full z-20">
           <TopHeader onMenuClick={() => setSidebarOpen(true)} />

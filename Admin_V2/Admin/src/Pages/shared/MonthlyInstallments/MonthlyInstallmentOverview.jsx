@@ -139,12 +139,13 @@ const MonthlyInstallmentOverviews = () => {
     let serial = 1;
 
     const sortedCards = [...(customerInstallmentCards || [])].sort(
-      (a, b) => Number(a.card_number) - Number(b.card_number),
+      (a, b) => Number(a.card_id || a.id || 0) - Number(b.card_id || b.id || 0),
     );
 
     sortedCards.forEach((card) => {
-      if (!map[card.card_number]) {
-        map[card.card_number] = serial;
+      const key = card.card_id ?? card.id;
+      if (key !== undefined && key !== null && !map[key]) {
+        map[key] = serial;
         serial++;
       }
     });
@@ -176,8 +177,9 @@ const MonthlyInstallmentOverviews = () => {
 
       const card = (customerInstallmentCards || []).find(
         (c) =>
-          String(c.card_number) === String(payment.card_id) ||
-          String(c.id) === String(payment.card_id),
+          String(c.card_id) === String(payment.card_id) ||
+          String(c.id) === String(payment.card_id) ||
+          String(c.card_number) === String(payment.card_id),
       );
 
 if (!card) return;
@@ -185,9 +187,11 @@ if (!card) return;
 if (!customer) return;
       const isPaid = payment.status === "Paid" || payment.paid_date;
 
+      const cardIdentifier = card?.card_id ?? card?.id ?? payment?.card_id;
+
       rows.push({
-        cardSerial: card ? cardSerialMap[card.card_number] : "-",
-        cardNo: card?.card_number || payment.card_id || "-",
+        cardSerial: card ? (cardSerialMap[card.card_id ?? card.id] || cardIdentifier || "-") : "-",
+        cardNo: cardIdentifier || "-",
         customerName: customer?.name || "Unknown",
         phone: customer?.mobile || "-",
         image: customer?.photo || "-",
@@ -540,9 +544,9 @@ const collectedAmount = useMemo(() => {
                     <Link
                       target="_blank"
                       rel="noopener noreferrer"
-                      to={`/customer/create_installment_chart?cardId=${row.cardSerial}`}
+                      to={`/customer/create_installment_chart?cardId=${row.cardNo}`}
                     >
-                      {row.cardSerial}
+                      {row.cardNo}
                     </Link>
                   </td>
 

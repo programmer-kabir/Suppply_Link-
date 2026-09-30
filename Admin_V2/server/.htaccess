@@ -1,4 +1,3 @@
-# public_html/.htaccess - SPA fallback (static build)
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /

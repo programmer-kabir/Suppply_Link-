@@ -43,29 +43,33 @@ const userRoles = Array.isArray(user?.role) ? user.role : [user?.role];
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
 
-  /* 🧠 users map (id → name) */
+  /* 🧠 users map (id/user_id → name) */
   const usersMap = useMemo(() => {
     return (
       users?.reduce((acc, u) => {
-        acc[u.id] = u.name;
+        if (u.id) acc[Number(u.id)] = u.name;
+        if (u.user_id) acc[Number(u.user_id)] = u.name;
         return acc;
       }, {}) || {}
     );
   }, [users]);
+
   const cardsById = useMemo(() => {
-    return (
-      customerInstallmentCards?.reduce((acc, c) => {
-        const cardId = Number(c.id);
-        acc[cardId] = {
-          card_id: cardId,
-          card_number: c.card_number || "N/A",
-          user_id: Number(c.user_id || 0),
-           remarks: c.remarks || "",
-        };
-        return acc;
-      }, {}) || {}
-    );
+    const acc = {};
+    (customerInstallmentCards || []).forEach((c) => {
+      const cardObj = {
+        card_id: c.card_id || c.id,
+        card_number: c.card_id || c.id || "N/A",
+        user_id: Number(c.user_id || c.customer_user_id || 0),
+        remarks: c.remarks || "",
+        reference_user_id: c.reference_user_id,
+      };
+      if (c.id) acc[Number(c.id)] = cardObj;
+      if (c.card_id) acc[Number(c.card_id)] = cardObj;
+    });
+    return acc;
   }, [customerInstallmentCards]);
+
 const filteredData = useMemo(() => {
   if (!customerInstallmentPayments?.length) return [];
 
@@ -86,7 +90,7 @@ const filteredData = useMemo(() => {
         card?.user_id || p.user_id || p.customer_id || p.investor_id || 0
       );
 
-      const collected_by = p.collected_by;
+      const collected_by = p.collected_by || p.signature || card?.reference_user_id;
       const collectedByName = usersMap[collected_by] || "Unknown Staff";
 
       const dueDate = p.due_date || "";
@@ -98,8 +102,8 @@ const filteredData = useMemo(() => {
         customerId,
         customerName: usersMap[customerId] || "Unknown",
         collectedByName,
-        cardId,
-        cardNumber: card?.card_number || "N/A",
+        cardId: card?.card_id || cardId,
+        cardNumber: card?.card_number || card?.card_id || cardId || "N/A",
         dueDate,
         monthName,
         amount: Number(p.due_amount || 0),

@@ -23,6 +23,7 @@ $stmt = $mysqli->prepare("
         SUM(CASE WHEN type='in' THEN amount ELSE 0 END) as total_in,
         SUM(CASE WHEN type='out' THEN amount ELSE 0 END) as total_out
     FROM cash
+    WHERE (is_deleted = 0 OR is_deleted IS NULL)
     GROUP BY ym
     ORDER BY ym ASC
 ");

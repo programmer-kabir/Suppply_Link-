@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import React, { useMemo, useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaUser,
   FaHashtag,
@@ -10,14 +11,116 @@ import {
   FaTruck,
   FaStore,
   FaCalculator,
+  FaCreditCard,
+  FaFileInvoiceDollar,
+  FaInfoCircle,
+  FaCheckCircle,
+  FaChevronDown,
+  FaSearch
 } from "react-icons/fa";
 import IconInput from "../../../components/IconInput";
 import useUsers from "../../../utils/Hooks/useUsers";
+import useCustomerInstallmentCards from "../../../utils/Hooks/useCustomerInstallmentCards";
+
+const SearchableDropdown = ({ users, value, onChange, disabled, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const term = search.toLowerCase();
+      const name = (u.name ?? u.full_name ?? u.username ?? "").toLowerCase();
+      const mobile = (u.mobile ?? "").toLowerCase();
+      const idNum = String(u.user_id || u.id);
+      return name.includes(term) || mobile.includes(term) || idNum.includes(term);
+    });
+  }, [users, search]);
+  const selectedUser = users.find((u) => String(u.user_id || u.id) === String(value));
+  return (
+    <div className="relative w-full">
+      <div
+        className={`w-full py-1 text-white bg-transparent flex justify-between items-center cursor-pointer transition-colors ${disabled ? "opacity-50 pointer-events-none" : ""
+          }`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="truncate text-base">
+          {selectedUser
+            ? `${selectedUser.name ?? `User#${selectedUser.id}`} (ID: ${selectedUser.user_id || selectedUser.id})`
+            : placeholder || "Select User..."}
+        </span>
+        <FaChevronDown className={`transition-transform text-slate-400 ${isOpen ? "rotate-180" : ""}`} />
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute z-50 w-full mt-2 bg-[#1A2642] border border-white/10 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
+          >
+            <div className="sticky top-0 bg-[#1A2642] p-2 border-b border-white/10 z-10">
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  className="w-full bg-[#0F1B2D] text-white pl-9 pr-3 py-2 rounded-lg outline-none border border-white/5 focus:border-blue-500 transition-colors"
+                  placeholder="Search name, phone, or ID..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+            <div className="py-2">
+              {filteredUsers.length === 0 ? (
+                <div className="p-3 text-slate-400 text-center text-sm">No users found</div>
+              ) : (
+                filteredUsers.map((u) => (
+                  <div
+                    key={u.id}
+                    className="px-4 py-2.5 hover:bg-blue-600/30 cursor-pointer text-white flex justify-between items-center transition-colors"
+                    onClick={() => {
+                      onChange(u.user_id || u.id);
+                      setIsOpen(false);
+                      setSearch("");
+                    }}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{u.name ?? `User#${u.id}`}</span>
+                      {u.mobile && <span className="text-xs text-slate-400">{u.mobile}</span>}
+                    </div>
+                    <span className="text-blue-400 text-xs font-mono bg-blue-500/10 px-2 py-1 rounded">
+                      ID: {u.user_id || u.id}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const CreateInstallmentCards = () => {
-  const { register, handleSubmit, reset, watch } = useForm();
+  const { register, handleSubmit, reset, watch, setValue, control } = useForm();
   const saleType = watch("sale_type", "Installment");
+  const { customerInstallmentCards } = useCustomerInstallmentCards();
+
+
   const { isUsersLoading, users = [], isUsersError } = useUsers();
+
+  useEffect(() => {
+    if (users && users.length > 0 && !watch("user_id")) {
+      const lastUser = [...users].sort((a, b) => Number(b.id) - Number(a.id))[0];
+      if (lastUser) {
+        setValue("user_id", lastUser.id);
+      }
+    }
+  }, [users, setValue, watch]);
+
   const officialStaff = useMemo(() => {
     const allowedRoles = ["admin", "manager", "staff", "developer"];
 
@@ -37,25 +140,21 @@ const CreateInstallmentCards = () => {
   }, [users]);
 
   const onSubmit = async (data) => {
-    // Required validation (ordered)
+    // Required validation
     const requiredFields = [
-      { key: "card_number", message: "কার্ড নাম্বার দিতে হবে" },
       { key: "user_id", message: "User নির্বাচন করতে হবে" },
       { key: "product_name", message: "Product নাম দিতে হবে" },
       { key: "mrp", message: "MRP দিতে হবে" },
       { key: "sale_price", message: "Sale price দিতে হবে" },
       { key: "purchase_price", message: "purchase price দিতে হবে" },
-      { key: "installment_count", message: "installment count দিতে হবে" },
-      { key: "delivery_date", message: "delivery bdate দিতে হবে" },
-      {
-        key: "first_installment_date",
-        message: "first installment date  দিতে হবে",
-      },
-      {
-        key: "reference_user_id",
-        message: "reference user id দিতে হবে",
-      },
+      { key: "delivery_date", message: "delivery date দিতে হবে" },
+      { key: "reference_user_id", message: "reference user id দিতে হবে" },
     ];
+
+    if (data.sale_type === "Installment") {
+      requiredFields.push({ key: "installment_count", message: "installment count দিতে হবে" });
+      requiredFields.push({ key: "first_installment_date", message: "first installment date দিতে হবে" });
+    }
 
     for (let field of requiredFields) {
       if (!data[field.key]) {
@@ -63,31 +162,18 @@ const CreateInstallmentCards = () => {
         return;
       }
     }
-    if (data.sale_type === "Installment") {
-      if (!data.installment_count) {
-        toast.error("Installment count দিতে হবে");
-        return;
-      }
-    }
 
     try {
-      // ================= FORM DATA =================
       const formData = new FormData();
-
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== "") {
           formData.append(key, value);
         }
       });
-      // ================= API CALL =================
+
       const res = await fetch(
-        `${
-          import.meta.env.VITE_LOCALHOST_KEY
-        }/customers/create_installment_card.php`,
-        {
-          method: "POST",
-          body: formData,
-        }
+        `${import.meta.env.VITE_LOCALHOST_KEY}/customers/create_installment_card.php`,
+        { method: "POST", body: formData }
       );
 
       const result = await res.json();
@@ -103,180 +189,258 @@ const CreateInstallmentCards = () => {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="max-w-7xl mx-auto bg-white/5 border border-white/10 rounded-2xl p-6 space-y-5"
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="max-w-6xl mx-auto  px-4 sm:px-6 lg:px-8"
     >
-      <h2 className="text-xl font-semibold text-white">
-        Create Installment Card
-      </h2>
-
-      <IconInput
-        label="Card Number"
-        icon={FaHashtag}
-        register={register}
-        name="card_number"
-        placeholder="Card Number"
-      />
-
-      <IconInput
-        label="User ID"
-        icon={FaUser}
-        register={register}
-        name="user_id"
-        placeholder="User ID"
-        type="number"
-      />
-
-      <IconInput
-        label="Product Name"
-        icon={FaBox}
-        register={register}
-        name="product_name"
-        placeholder="Product Name"
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <IconInput
-          label="MRP"
-          icon={FaMoneyBillWave}
-          register={register}
-          name="mrp"
-          placeholder="MRP"
-          type="number"
-        />
-
-        <IconInput
-          label="Sale Price"
-          icon={FaMoneyBillWave}
-          register={register}
-          name="sale_price"
-          placeholder="Sale Price"
-          type="number"
-        />
+      {/* Header Section */}
+      <div className="text-center">
+        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center gap-3">
+          <FaCreditCard className="text-blue-500" />
+          Create Installment Card
+        </h1>
+        <p className="mt-2 text-gray-400 text-sm">Create a new installment or cash sale record for your customer seamlessly.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <IconInput
-          label="Purchase Price"
-          icon={FaMoneyBillWave}
-          register={register}
-          name="purchase_price"
-          placeholder="Purchase Price"
-          type="number"
-        />
-
-        <IconInput
-          label="Additional Cost"
-          icon={FaMoneyBillWave}
-          register={register}
-          name="additional_cost"
-          placeholder="Additional Cost"
-          type="number"
-        />
-      </div>
-
-      <IconInput
-        label="Sale Type"
-        icon={FaStore}
-        register={register}
-        name="sale_type"
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-8 pt-5"
       >
-        <select
-          {...register("sale_type")}
-          className="bg-[#0F1B2D] text-white w-full py-2"
-        >
-          <option value="Installment">Installment</option>
-          <option value="Cash">Cash</option>
-        </select>
-      </IconInput>
+        {/* Customer & Product Information */}
+        <motion.div variants={itemVariants} className="bg-[#111C35]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-8 shadow-2xl relative group z-30">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500 group-hover:w-2 transition-all duration-300 rounded-l-3xl"></div>
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
+            <FaInfoCircle className="text-blue-400" /> General Information
+          </h2>
 
-      {saleType === "Installment" && (
-        <>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
             <IconInput
-              label="Down Payment"
+              label="User ID (Customer)"
+              icon={FaUser}
+            >
+              <Controller
+                name="user_id"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <SearchableDropdown
+                    users={users}
+                    value={value || watch("user_id")}
+                    onChange={(val) => {
+                      onChange(val);
+                      setValue("user_id", val);
+                    }}
+                    disabled={isUsersLoading || isUsersError}
+                    placeholder={isUsersLoading ? "Loading users..." : "Select Customer"}
+                  />
+                )}
+              />
+            </IconInput>
+
+            <IconInput
+              label="Product Name"
+              icon={FaBox}
+              register={register}
+              name="product_name"
+              placeholder="Enter product name..."
+            />
+
+            <IconInput
+              label="Supplier ID (Optional)"
+              icon={FaStore}
+              register={register}
+              name="supplier_id"
+              type="number"
+              placeholder="e.g. 5"
+            />
+          </div>
+        </motion.div>
+
+        {/* Pricing & Financials */}
+        <motion.div variants={itemVariants} className="bg-[#111C35]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-8 shadow-2xl relative group z-20">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500 group-hover:w-2 transition-all duration-300 rounded-l-3xl"></div>
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
+            <FaFileInvoiceDollar className="text-purple-400" /> Pricing & Financials
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <IconInput
+              label="MRP"
               icon={FaMoneyBillWave}
               register={register}
-              name="down_payment"
+              name="mrp"
+              placeholder="0.00"
               type="number"
             />
 
             <IconInput
-              label="Installment Count"
-              icon={FaHashtag}
+              label="Purchase Price"
+              icon={FaMoneyBillWave}
               register={register}
-              name="installment_count"
+              name="purchase_price"
+              placeholder="0.00"
+              type="number"
+            />
+
+            <IconInput
+              label="Additional Cost"
+              icon={FaMoneyBillWave}
+              register={register}
+              name="additional_cost"
+              placeholder="0.00"
+              type="number"
+            />
+
+            <IconInput
+              label="Sale Price"
+              icon={FaMoneyBillWave}
+              register={register}
+              name="sale_price"
+              placeholder="0.00"
               type="number"
             />
           </div>
-          <IconInput
-            label="Per Installment Amount"
-            icon={FaCalculator}
-            register={register}
-            name="per_installment_amount"
-            placeholder="Per installment amount"
-            type="number"
-          />
+        </motion.div>
 
-          <IconInput
-            label="First Installment Date"
-            icon={FaCalendarAlt}
-            register={register}
-            name="first_installment_date"
-            type="date"
-            style={{ colorScheme: "dark" }}
-          />
-        </>
-      )}
+        {/* Payment Configuration */}
+        <motion.div variants={itemVariants} className="bg-[#111C35]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-8 shadow-2xl relative group z-10">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 group-hover:w-2 transition-all duration-300 rounded-l-3xl"></div>
+          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
+            <FaCalculator className="text-emerald-400" /> Payment Configuration
+          </h2>
 
-      <IconInput
-        label="Delivery Date"
-        icon={FaTruck}
-        register={register}
-        name="delivery_date"
-        type="date"
-        style={{ colorScheme: "dark" }}
-      />
-      <IconInput
-        label="Reference (Official Staff)"
-        icon={FaUser}
-        register={register}
-        name="reference_user_id"
-      >
-        <select
-          {...register("reference_user_id")}
-          className="bg-[#0F1B2D] text-white w-full py-2"
-          disabled={isUsersLoading || isUsersError}
-        >
-          <option value="">
-            {isUsersLoading
-              ? "Loading staff..."
-              : isUsersError
-              ? "Staff load failed"
-              : "Select Reference Staff"}
-          </option>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <IconInput
+              label="Sale Type"
+              icon={FaStore}
+              register={register}
+              name="sale_type"
+            >
+              <select
+                {...register("sale_type")}
+                className="bg-[#0F1B2D] text-white w-full py-2 outline-none"
+              >
+                <option value="Installment">Installment</option>
+                <option value="Cash">Cash</option>
+              </select>
+            </IconInput>
 
-          {officialStaff.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.name ?? u.full_name ?? u.username ?? `User#${u.id}`}
-            </option>
-          ))}
-        </select>
-      </IconInput>
-      <IconInput
-        label="Supplier ID"
-        icon={FaStore}
-        register={register}
-        name="supplier_id"
-        type="number"
-      />
+            <IconInput
+              label="Reference (Official Staff)"
+              icon={FaUser}
+            >
+              <Controller
+                name="reference_user_id"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <SearchableDropdown
+                    users={officialStaff}
+                    value={value || watch("reference_user_id")}
+                    onChange={(val) => {
+                      onChange(val);
+                      setValue("reference_user_id", val);
+                    }}
+                    disabled={isUsersLoading || isUsersError}
+                    placeholder={isUsersLoading ? "Loading staff..." : "Select Reference Staff"}
+                  />
+                )}
+              />
+            </IconInput>
+          </div>
 
-      <button className="w-full py-2 bg-blue-600 rounded-xl text-white">
-        Create Installment Card
-      </button>
-    </form>
+          {saleType === "Installment" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-black/20 p-6 rounded-2xl border border-white/5"
+            >
+              <IconInput
+                label="Down Payment"
+                icon={FaMoneyBillWave}
+                register={register}
+                name="down_payment"
+                type="number"
+                placeholder="0.00"
+              />
+
+              <IconInput
+                label="Installments"
+                icon={FaHashtag}
+                register={register}
+                name="installment_count"
+              >
+                <select
+                  {...register("installment_count")}
+                  className="bg-[#0F1B2D] text-white w-full py-2 outline-none"
+                >
+                  <option value="">Select Count</option>
+                  <option value="6">6 Installments</option>
+                  <option value="12">12 Installments</option>
+                </select>
+              </IconInput>
+
+              <IconInput
+                label="Per Installment (Opt)"
+                icon={FaCalculator}
+                register={register}
+                name="per_installment_amount"
+                placeholder="Auto calculated"
+                type="number"
+              />
+
+              <IconInput
+                label="First Installment"
+                icon={FaCalendarAlt}
+                register={register}
+                name="first_installment_date"
+                type="date"
+                style={{ colorScheme: "dark" }}
+              />
+            </motion.div>
+          )}
+
+          <div className="mt-6 md:w-1/2">
+            <IconInput
+              label="Delivery Date"
+              icon={FaTruck}
+              register={register}
+              name="delivery_date"
+              type="date"
+              style={{ colorScheme: "dark" }}
+            />
+          </div>
+        </motion.div>
+
+        {/* Submit Button */}
+        <motion.div variants={itemVariants} className="flex justify-end pt-4">
+          <button
+            type="submit"
+            className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(79,70,229,0.3)] hover:shadow-[0_0_60px_rgba(79,70,229,0.5)] transition-all active:scale-95 flex items-center justify-center gap-3"
+          >
+            <div className="absolute inset-0 bg-white/20 group-hover:translate-x-full -translate-x-full skew-x-12 transition-transform duration-700 ease-in-out"></div>
+            <FaCheckCircle className="text-xl" /> Generate Card
+          </button>
+        </motion.div>
+      </form>
+    </motion.div>
   );
 };
 

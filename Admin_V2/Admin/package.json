@@ -10,16 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
     "@reduxjs/toolkit": "^2.11.0",
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
     "framer-motion": "^12.23.26",
-    "localforage": "^1.10.0",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.561.0",
-    "match-sorter": "^8.2.0",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0",
@@ -30,10 +27,8 @@
     "react-to-print": "^3.3.0",
     "react-toastify": "^11.0.5",
     "recharts": "^3.8.1",
-    "sort-by": "^1.2.0",
     "sweetalert2": "^11.26.17",
-    "tailwindcss": "^4.1.17",
-    "zod": "^4.2.1"
+    "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

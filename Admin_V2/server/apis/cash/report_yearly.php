@@ -45,7 +45,7 @@ $stmt = $mysqli->prepare("
         type,
         IFNULL(SUM(amount),0) as total
     FROM cash
-    WHERE YEAR(date) = ?
+    WHERE YEAR(date) = ? AND (is_deleted = 0 OR is_deleted IS NULL)
     GROUP BY month, type
     ORDER BY month ASC
 ");

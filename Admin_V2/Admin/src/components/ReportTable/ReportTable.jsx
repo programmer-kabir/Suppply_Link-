@@ -11,12 +11,12 @@ const ReportTable = ({
   if (!data?.length) return null;
 
   return (
-    <div className="mt-10 px-10">
-      <h2 className="text-2xl font-bold text-center mb-4">
+    <div className="mt-6 px-6 md:px-10">
+      <h2 className="text-base md:text-lg font-bold text-center mb-2.5 report-table-title text-gray-900">
         {title}
       </h2>
 
-      <table className="w-full border-collapse mb-8">
+      <table className="w-full border-collapse mb-5">
         <thead>
           <tr>
             {columns.map((column, index) => (

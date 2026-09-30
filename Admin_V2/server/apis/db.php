@@ -4,8 +4,8 @@ define('DEBUG', true); // ডেবাগিং: লোকাল/টেস্ট
 date_default_timezone_set('Asia/Dhaka');
 
 $DB_HOST = "localhost";     
-$DB_USER = "u647959341_supplyManageDb";
-$DB_PASS = "122333Msd@";
+$DB_USER = "root";
+$DB_PASS = "";
 $DB_NAME = "u647959341_supplyManageDb";
 
 $mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);

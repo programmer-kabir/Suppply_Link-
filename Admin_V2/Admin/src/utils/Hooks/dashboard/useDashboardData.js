@@ -44,7 +44,8 @@ const useDashboardData = () => {
   const companyExpenses = approvedCashReports.filter(
     (cash) =>
       cash.type === "out" &&
-      cash.source === "company-expense"
+      (cash.source === "company-expense" ||
+        ["salary", "rent", "bill", "office-expense", "maintenance", "utility", "marketing", "transport", "food", "internet", "others"].includes(cash.category?.toLowerCase()?.trim()))
   );
 
   const today = new Intl.DateTimeFormat("en-CA", {
@@ -52,7 +53,7 @@ const useDashboardData = () => {
   }).format(new Date());
 
   const previousCashReports = approvedCashReports.filter(
-    (cash) => cash.date?.split(" ")[0] < today
+    (cash) => (cash.date?.split(" ")[0] || cash.date) < today
   );
 
   const openingCashIn = previousCashReports
@@ -137,6 +138,8 @@ const useDashboardData = () => {
     customerInstallmentPayments: safeCustomerPayments,
     investInstallments: safeInvestInstallments,
     companyExpenses,
+    approvedCashReports,
+    cashReports: approvedCashReports,
     dailyInstallments,
     isLoading,
     isError,

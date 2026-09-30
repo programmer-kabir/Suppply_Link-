@@ -103,15 +103,21 @@ try {
     // ================== TRANSACTION ==================
     $mysqli->begin_transaction();
 
+    // ================== GET NEXT user_id ==================
+    $res = $mysqli->query("SELECT MAX(user_id) AS max_id FROM users FOR UPDATE");
+    $row = $res->fetch_assoc();
+    $next_user_id = ($row['max_id'] ?? 0) + 1;
+
     // ================== INSERT users ==================
     $stmt = $mysqli->prepare("
         INSERT INTO users
-        (name, mobile, id_type, id_number, address, start_date, password, photo)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (user_id, name, mobile, id_type, id_number, address, start_date, password, photo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     $stmt->bind_param(
-        "ssssssss",
+        "issssssss",
+        $next_user_id,
         $name,
         $mobile,
         $id_type,
@@ -134,7 +140,7 @@ try {
         INSERT INTO user_roles (user_id, role, assigned_at)
         VALUES (?, ?, NOW())
     ");
-    $stmtRole->bind_param("is", $user_id, $role);
+    $stmtRole->bind_param("is", $next_user_id, $role);
     $stmtRole->execute();
 
     $mysqli->commit();

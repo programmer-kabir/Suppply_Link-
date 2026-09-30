@@ -45,7 +45,7 @@ import DailyInstallmentReportPrint from "../Pages/shared/DailyInstallments/Daily
 import DashboardReport from "../components/Dashboard/DashboardReport";
 import DailyInstallmentsPaidReport from "../Pages/shared/DailyInstallments/DailyInstallmentsPaidReport";
 import Account from "../Pages/shared/Account/Account";
-import MonthlyOverviewsTest from "../Pages/shared/Customers/MonthlyOverviewsTest";
+import MonthlyProfitReport from "../Pages/shared/Reports/MonthlyProfitReport";
 
 const routes = createBrowserRouter([
   {
@@ -109,10 +109,6 @@ const routes = createBrowserRouter([
           {
             path: "/customers/monthly_installment_overviews",
             element: <MonthlyInstallmentOverviews />,
-          },
-          {
-            path: "/customers/monthly_installment_overviews_test",
-            element: <MonthlyOverviewsTest />,
           },
           {
             path: "customers/all_customer/customer_details",
@@ -230,6 +226,12 @@ const routes = createBrowserRouter([
           {
             path: "/files/add_installment_file",
             element: <AddNewInstallmentFiles />,
+          },
+
+          // Reports & Profit
+          {
+            path: "/reports/monthly-profit",
+            element: <MonthlyProfitReport />,
           },
 
           // Profile

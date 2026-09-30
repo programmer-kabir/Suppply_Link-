@@ -27,41 +27,56 @@ const InstallmentChart = () => {
     customerInstallmentCards,
     isCustomerInstallmentsCardsError,
   } = useCustomerInstallmentCards();
-  const currentCard = customerInstallmentCards?.find(
-    (card) => card.id === Number(cardId),
-  );
-  const InstallmentPayments = customerInstallmentPayments.filter(
-    (payment) => payment.card_id === Number(cardId),
-  );
+  const currentCard = useMemo(() => {
+    if (!customerInstallmentCards?.length) return null;
+    return (
+      customerInstallmentCards.find(
+        (card) =>
+          Number(card.id) === Number(cardId) ||
+          Number(card.card_id) === Number(cardId) ||
+          String(card.card_id) === String(cardId)
+      ) || null
+    );
+  }, [customerInstallmentCards, cardId]);
+
+  const InstallmentPayments = useMemo(() => {
+    if (!customerInstallmentPayments?.length || !currentCard) return [];
+    return customerInstallmentPayments.filter(
+      (payment) =>
+        Number(payment.card_id) === Number(currentCard?.card_id) ||
+        Number(payment.card_id) === Number(currentCard?.id)
+    );
+  }, [customerInstallmentPayments, currentCard]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [installmentType, setInstallmentType] = useState("");
   const [hasDownPayment, setHasDownPayment] = useState(false);
 
-  // const companyStaff = useMemo(() => {
-  //   const allowed = ["developer", "manager", "admin", "staff"];
-  //   return allowed.includes(users?.role);
-  // }, [users]);
   const { users = [] } = useUsers(); // all users
   const userId = currentCard?.user_id;
 
   const isCompanyStaff = useMemo(() => {
-    const user = users.find((u) => Number(u.id) === Number(userId));
-    if (!user || !Array.isArray(user.roles)) return false;
+    if (!userId) return false;
+    const foundUser = users.find((u) => Number(u.id) === Number(userId) || Number(u.user_id) === Number(userId));
+    if (!foundUser || !Array.isArray(foundUser.roles)) return false;
 
     const allowed = ["developer", "manager", "admin", "staff"];
-    return user.roles.some((r) => allowed.includes(r));
+    return foundUser.roles.some((r) => allowed.includes(r));
   }, [users, userId]);
+
   const isLoading =
     isCustomerInstallmentsCardsLoading || isCustomerInstallmentsPaymentsLoading;
   const isError =
     isCustomerInstallmentsCardsError || isCustomerInstallmentsPaymentsError;
+
   if (isLoading) {
     return <Loader />;
   }
-  if (isError) {
-    return <NoDataFound />;
+
+  if (isError || !currentCard) {
+    return <NoDataFound message="Card Not Found" subMessage="Please verify the card ID" />;
   }
+
 
   return (
     <div className="mx-auto space-y-8">

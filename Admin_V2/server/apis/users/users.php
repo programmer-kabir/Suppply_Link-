@@ -46,6 +46,7 @@ function apiError($message, $debug = null, $code = 500) {
 $sql = " 
     SELECT  
         u.id, 
+        u.user_id, 
         u.name, 
         u.mobile, 
         u.id_number, 
@@ -58,6 +59,7 @@ $sql = "
         ON ur.user_id = u.id 
     GROUP BY  
         u.id, 
+        u.user_id, 
         u.name, 
         u.mobile, 
         u.id_number, 

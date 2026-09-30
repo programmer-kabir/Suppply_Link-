@@ -6,109 +6,120 @@ header("Content-Type: application/json");
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
+    /* ================= INPUT PARSING (JSON & POST) ================= */
+    $rawInput = json_decode(file_get_contents("php://input"), true);
+    $input = is_array($rawInput) ? $rawInput : $_POST;
 
-    /* ================= INPUT ================= */
-    $id = (int) ($_POST['id'] ?? 0);
+    $id = (int) ($input['id'] ?? 0);
 
-    $card_number   = trim($_POST['card_number'] ?? '');
-    $user_id       = (int) ($_POST['user_id'] ?? 0);
-    $product_name  = trim($_POST['product_name'] ?? '');
+    // Business card_id (previously mistakenly called card_number)
+    $card_id = (int) ($input['card_id'] ?? $input['card_number'] ?? 0);
+    $user_id = (int) ($input['user_id'] ?? 0);
+    $product_name = trim($input['product_name'] ?? '');
 
-    $mrp             = (float) ($_POST['mrp'] ?? 0);
-    $purchase_price  = (float) ($_POST['purchase_price'] ?? 0);
-    $additional_cost = (float) ($_POST['additional_cost'] ?? 0);
+    $mrp             = (float) ($input['mrp'] ?? 0);
+    $purchase_price  = (float) ($input['purchase_price'] ?? 0);
+    $additional_cost = (float) ($input['additional_cost'] ?? 0);
 
-    $sale_type    = $_POST['sale_type'] ?? 'Installment';
-    $sale_price   = (float) ($_POST['sale_price'] ?? 0);
-    $down_payment = (float) ($_POST['down_payment'] ?? 0);
+    $sale_type    = in_array($input['sale_type'] ?? '', ['Cash', 'Installment']) ? $input['sale_type'] : 'Installment';
+    $sale_price   = (float) ($input['sale_price'] ?? 0);
+    $down_payment = (float) ($input['down_payment'] ?? 0);
 
-    $installment_count      = (int) ($_POST['installment_count'] ?? 0);
-    $delivery_date          = $_POST['delivery_date'] ?? null;
-    $first_installment_date = $_POST['first_installment_date'] ?? null;
+    $installment_count      = (int) ($input['installment_count'] ?? 0);
+    $delivery_date          = !empty($input['delivery_date']) ? $input['delivery_date'] : null;
+    $first_installment_date = !empty($input['first_installment_date']) ? $input['first_installment_date'] : null;
 
-    $client_per_installment = isset($_POST['per_installment_amount'])
-        ? (float) $_POST['per_installment_amount']
+    $client_per_installment = isset($input['per_installment_amount'])
+        ? (float) $input['per_installment_amount']
         : 0;
 
-    $supplier_id = !empty($_POST['supplier_id'])
-        ? (int) $_POST['supplier_id']
+    $supplier_id = !empty($input['supplier_id'])
+        ? (int) $input['supplier_id']
         : null;
 
-    $reference_user_id = !empty($_POST['reference_user_id'])
-        ? (int) $_POST['reference_user_id']
+    $reference_user_id = !empty($input['reference_user_id'])
+        ? (int) $input['reference_user_id']
         : null;
 
-    $status  = $_POST['status'] ?? 'Running';
-    $remarks = $_POST['remarks'] ?? null;
+    $status  = in_array($input['status'] ?? '', ['Running', 'Fully Paid', 'Overdue', 'Pending']) ? $input['status'] : 'Running';
+    $remarks = trim($input['remarks'] ?? '');
 
     /* ================= VALIDATION ================= */
     if ($id <= 0) {
-        throw new Exception("Invalid card ID");
+        throw new Exception("Invalid card database record ID");
+    }
+
+    if ($card_id <= 0) {
+        throw new Exception("Card ID number is required");
     }
 
     if (
-        $card_number === '' ||
         $user_id <= 0 ||
         $product_name === '' ||
         $mrp <= 0 ||
         $sale_price <= 0 ||
-        $purchase_price <= 0 ||
-        $installment_count <= 0 ||
-        empty($delivery_date) ||
-        empty($first_installment_date)
+        $purchase_price < 0 ||
+        empty($delivery_date)
     ) {
-        throw new Exception("Required field missing");
+        throw new Exception("Required fields missing (User, Product, Price, or Dates)");
+    }
+
+    if ($sale_type === 'Installment') {
+        if ($installment_count <= 0 || empty($first_installment_date)) {
+            throw new Exception("Installment count and first installment date are required");
+        }
     }
 
     if ($reference_user_id === null || $reference_user_id <= 0) {
-        throw new Exception("Reference staff is required");
+        throw new Exception("Reference staff user is required");
     }
 
-    /* ================= DUPLICATE CHECK ================= */
+    /* ================= TRANSACTION START ================= */
+    $mysqli->begin_transaction();
+
+    // Check old card data
+    $fetchOld = $mysqli->prepare("SELECT card_id FROM installment_cards WHERE id = ?");
+    $fetchOld->bind_param("i", $id);
+    $fetchOld->execute();
+    $oldRes = $fetchOld->get_result();
+    if ($oldRes->num_rows === 0) {
+        throw new Exception("Card record not found in database");
+    }
+    $oldCard = $oldRes->fetch_assoc();
+    $old_card_id = (int)$oldCard['card_id'];
+    $fetchOld->close();
+
+    /* ================= DUPLICATE CARD_ID CHECK ================= */
     $check = $mysqli->prepare("
         SELECT id FROM installment_cards 
-        WHERE card_number=? AND id!=?
+        WHERE card_id = ? AND id != ?
     ");
-    $check->bind_param("si", $card_number, $id);
+    $check->bind_param("ii", $card_id, $id);
     $check->execute();
 
     if ($check->get_result()->num_rows > 0) {
-        throw new Exception("Card number already exists");
+        throw new Exception("Card ID {$card_id} is already in use by another card");
     }
+    $check->close();
 
     /* ================= CALCULATION ================= */
-
-    $total_due_amount = $sale_price - $down_payment;
-
-    if ($total_due_amount <= 0) {
-        throw new Exception("Invalid total due amount");
-    }
+    $total_due_amount = max(0, $sale_price - $down_payment);
 
     if ($client_per_installment > 0) {
         $per_installment_amount = $client_per_installment;
+    } elseif ($installment_count > 0) {
+        $per_installment_amount = round($total_due_amount / $installment_count, 2);
     } else {
-        $per_installment_amount = round(
-            $total_due_amount / $installment_count,
-            2
-        );
-    }
-
-    if ($per_installment_amount <= 0) {
-        throw new Exception("Invalid per installment amount");
+        $per_installment_amount = 0;
     }
 
     $cost_price = $purchase_price + $additional_cost;
-
-    // ✅ FIXED PROFIT
     $profit = $sale_price - $cost_price;
 
-    // ✅ NULL SAFE
-    $supplier_id = $supplier_id ?: NULL;
-
-    /* ================= UPDATE ================= */
+    /* ================= UPDATE INSTALLMENT CARD ================= */
     $stmt = $mysqli->prepare("
         UPDATE installment_cards SET
-            card_number = ?,
+            card_id = ?,
             user_id = ?,
             product_name = ?,
             mrp = ?,
@@ -132,8 +143,8 @@ try {
     ");
 
     $stmt->bind_param(
-        "sisddddsdddiddssiissi",
-        $card_number,
+        "iisddddsdddiddssiissi",
+        $card_id,
         $user_id,
         $product_name,
         $mrp,
@@ -157,19 +168,33 @@ try {
     );
 
     $stmt->execute();
+    $stmt->close();
+
+    // If card_id changed, sync corresponding installment_payments
+    if ($old_card_id > 0 && $old_card_id !== $card_id) {
+        $syncPayments = $mysqli->prepare("UPDATE installment_payments SET card_id = ? WHERE card_id = ?");
+        $syncPayments->bind_param("ii", $card_id, $old_card_id);
+        $syncPayments->execute();
+        $syncPayments->close();
+    }
+
+    $mysqli->commit();
 
     echo json_encode([
         "success" => true,
         "message" => "Installment card updated successfully ✅"
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Throwable $e) {
+    if (isset($mysqli) && $mysqli instanceof mysqli) {
+        @$mysqli->rollback();
+    }
 
-    http_response_code(500);
+    http_response_code(400);
 
     echo json_encode([
         "success" => false,
         "message" => "Update failed",
         "error"   => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 }

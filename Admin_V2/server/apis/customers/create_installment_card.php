@@ -10,7 +10,6 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 try {
 
     /* ================= INPUT ================= */
-    $card_number   = trim($_POST['card_number'] ?? '');
     $user_id       = (int) ($_POST['user_id'] ?? 0);
     $product_name  = trim($_POST['product_name'] ?? '');
 
@@ -35,23 +34,26 @@ try {
     $supplier_id = !empty($_POST['supplier_id'])
         ? (int) $_POST['supplier_id']
         : null;
-$reference_user_id = !empty($_POST['reference_user_id'])
-    ? (int) $_POST['reference_user_id']
-    : null;
+    $reference_user_id = !empty($_POST['reference_user_id'])
+        ? (int) $_POST['reference_user_id']
+        : null;
     /* ================= VALIDATION ================= */
     // frontend যেগুলো MUST করেছে
     if (
-        $card_number === '' ||
         $user_id <= 0 ||
         $product_name === '' ||
         $mrp <= 0 ||
         $sale_price <= 0 ||
         $purchase_price <= 0 ||
-        $installment_count <= 0 ||
-        empty($delivery_date) ||
-        empty($first_installment_date)
+        empty($delivery_date)
     ) {
         throw new Exception("Required field missing");
+    }
+    
+    if ($sale_type === 'Installment') {
+        if ($installment_count <= 0 || empty($first_installment_date)) {
+            throw new Exception("Installment fields are required");
+        }
     }
 
     /* ================= CALCULATION ================= */
@@ -86,10 +88,15 @@ if ($reference_user_id === null || $reference_user_id <= 0) {
     // profit = (purchase + additional) - sale
     $profit = $cost_price - $sale_price;
 
+    $res = $mysqli->query("SELECT MAX(card_id) AS max_id FROM installment_cards FOR UPDATE");
+    $row = $res->fetch_assoc();
+    $next_card_id = ($row['max_id'] ?? 0) + 1;
+    $card_number = (string) $next_card_id;
+
     /* ================= INSERT ================= */
     $stmt = $mysqli->prepare("
         INSERT INTO installment_cards (
-            card_number,
+            card_id,
             user_id,
             product_name,
             mrp,
@@ -110,13 +117,13 @@ if ($reference_user_id === null || $reference_user_id <= 0) {
             status,
             created_at
         ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, 'Running', NOW()
+            ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Running', NOW()
         )
     ");
 
     $stmt->bind_param(
-        "sisddddsdddiddssii",
-        $card_number,            // s
+        "iisddddsdddiddssii",
+        $next_card_id,           // i
         $user_id,                // i
         $product_name,           // s
         $mrp,                    // d
@@ -141,7 +148,9 @@ if ($reference_user_id === null || $reference_user_id <= 0) {
 
     echo json_encode([
         "success" => true,
-        "message" => "Installment card created successfully"
+        "message" => "Installment card created successfully",
+        "card_id" => $next_card_id,
+        "id"      => $stmt->insert_id
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Throwable $e) {

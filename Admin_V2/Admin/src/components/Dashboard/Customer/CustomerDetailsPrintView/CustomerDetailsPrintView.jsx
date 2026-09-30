@@ -452,7 +452,7 @@ const CustomerDetailsPrintView = ({
 
                           const profitAmount = Number(p.profit_amount);
 
-                          const collectPersonId = Number(p?.collected_by);
+                          const collectPersonId = Number(p?.collected_by || p?.signature || card?.reference_user_id);
                           const collectPerson = users.find(
                             (u) => Number(u.id) === Number(collectPersonId),
                           );
